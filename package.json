@@ -1,0 +1,17 @@
+{
+  "name": "replacer",
+  "version": "1.0.0",
+  "description": "A command line utility to inject css and js files into an html file or to remove code based on conditions.",
+  "bin": "./replacer",
+  "scripts": {
+    "test": "tape tests/*.js | faucet"
+  },
+  "author": "Danny Moerkerke <danny@dannymoerkerke.nl>",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "faucet": "0.0.1",
+    "replacestream": "^4.0.0",
+    "tape": "^4.5.1"
+  }
+}
