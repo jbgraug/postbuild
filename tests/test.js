@@ -80,7 +80,7 @@ before('test setup', (t) => {
 });
 
 test('test injection of all stylesheets in directory', (t) => {
-    exec(`./replacer -i ${inputFile} -o ${outputFile} -c ${tmpDir}`, (err) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -c ${tmpDir}`, (err) => {
 
         fs.readFile(`${outputFile}`, (err, data) => {
             cssFiles.forEach((file) => {
@@ -93,7 +93,7 @@ test('test injection of all stylesheets in directory', (t) => {
 });
 
 test('test injection of all javascripts in directory', (t) => {
-    exec(`./replacer -i ${inputFile} -o ${outputFile} -j ${tmpDir}`, (err) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -j ${tmpDir}`, (err) => {
 
         fs.readFile(`${outputFile}`, (err, data) => {
             jsFiles.forEach((file) => {
@@ -106,7 +106,7 @@ test('test injection of all javascripts in directory', (t) => {
 });
 
 test('test injection of single stylesheet', (t) => {
-    exec(`./replacer -i ${inputFile} -o ${outputFile} -c ${tmpDir}/${cssFiles[0]}`, (err) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -c ${tmpDir}/${cssFiles[0]}`, (err) => {
 
         fs.readFile(`${outputFile}`, (err, data) => {
             t.equal(true, data.indexOf(`${tmpDir}/${cssFiles[0]}`) !== -1, `expect ${cssFiles[0]} to be injected`);
@@ -117,7 +117,7 @@ test('test injection of single stylesheet', (t) => {
 });
 
 test('test injection of single javascript', (t) => {
-    exec(`./replacer -i ${inputFile} -o ${outputFile} -j ${tmpDir}/${jsFiles[0]}`, (err) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -j ${tmpDir}/${jsFiles[0]}`, (err) => {
 
         fs.readFile(`${outputFile}`, (err, data) => {
             t.equal(true, data.indexOf(`${tmpDir}/${jsFiles[0]}`) !== -1, `expect ${jsFiles[0]} to be injected`);
@@ -128,7 +128,7 @@ test('test injection of single javascript', (t) => {
 });
 
 test('test removal of development code', (t) => {
-    exec(`./replacer -i ${inputFile} -o ${outputFile} -r development`, (err) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -r development`, (err) => {
         const devRegex = new RegExp('(<!\\-\\- remove:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
         const prodRegex = new RegExp('(<!\\-\\- remove:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
         
@@ -142,7 +142,7 @@ test('test removal of development code', (t) => {
 });
 
 test('test removal of production code', (t) => {
-    exec(`./replacer -i ${inputFile} -o ${outputFile} -r production`, (err) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -r production`, (err) => {
         const prodRegex = new RegExp('(<!\\-\\- remove:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
         const devRegex = new RegExp('(<!\\-\\- remove:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
 
