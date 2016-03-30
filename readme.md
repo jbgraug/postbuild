@@ -42,7 +42,7 @@ This way you can replace the regular files used in a development environment wit
     -h, --help             output usage information
     -V, --version          output the version number
     -i, --input <input>    Input file
-    -o, --output <output>  Output file
+    -o, --output <output>  Output file (defaults to input when omitted)
     -c, --css <css>        css file(s) to inject (file or directory)
     -j, --js <js>          js file(s) to inject (file or directory)
     -r, --remove <remove>  Remove condition
