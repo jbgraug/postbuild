@@ -23,22 +23,31 @@ const handleError = (message) => {
     process.exit(1);
 };
 
+const getFullPath = (file) => {
+    return file.substring(0, 1) !== '/' ? `${process.cwd()}/${file}` : `${process.cwd()}${file}`;
+};
+
 program
-    .version('1.0.0')
-    .option('-i, --input <input>', 'Input file')
-    .option('-o, --output <output>', 'Output file')
-    .option('-c, --css <css>', 'css file(s) to inject (file or directory)')
-    .option('-j, --js <js>', 'js file(s) to inject (file or directory)')
-    .option('-r, --remove <remove>', 'Remove condition')
-    .parse(process.argv);
+.version('1.0.0')
+.option('-i, --input <input>', 'Input file')
+.option('-o, --output <output>', 'Output file')
+.option('-c, --css <css>', 'css file(s) to inject (file or directory)')
+.option('-j, --js <js>', 'js file(s) to inject (file or directory)')
+.option('-r, --remove <remove>', 'Remove condition')
+.parse(process.argv);
 
 if(!program.input) {
     handleError('Please specify an input file');
 }
 else {
     try {
+        program.input = getFullPath(program.input);
+
         if(fs.lstatSync(program.input).isDirectory()) {
             handleError(`'${program.input}' is a directory, please specify an input file`);
+        }
+        if(!fs.lstatSync(program.input).isFile()) {
+            handleError(`File '${program.input}' not found`);
         }
     }
     catch(e) {
@@ -46,19 +55,17 @@ else {
     }
 }
 
-if(!program.output) {
-    program.output = program.input;
-}
+program.output = program.output ? getFullPath(program.output) : program.input;
 
 if(program.js) {
     const js = program.js;
-    
+
     try {
         if(fs.lstatSync(js).isDirectory()) {
             jsFiles = fs.readdirSync(js)
-                .filter(file => file.substr(-3) === '.js')
-                .map(file => `<script src="${js}/${file}"></script>`)
-                .join('\n');
+            .filter(file => file.substr(-3) === '.js')
+            .map(file => `<script src="${js}/${file}"></script>`)
+            .join('\n');
         }
         else if(fs.lstatSync(js).isFile()) {
             jsFiles = `<script src="${js}"></script>`;
@@ -71,13 +78,13 @@ if(program.js) {
 
 if(program.css) {
     const css = program.css;
-    
+
     try {
         if(fs.lstatSync(css).isDirectory()) {
             cssFiles = fs.readdirSync(css)
-                .filter(file => file.substr(-4) === '.css')
-                .map(file => `<link rel="stylesheet" href="${css}/${file}">`)
-                .join('\n');
+            .filter(file => file.substr(-4) === '.css')
+            .map(file => `<link rel="stylesheet" href="${css}/${file}">`)
+            .join('\n');
         }
         else if(fs.lstatSync(css).isFile()) {
             cssFiles = `<link rel="stylesheet" href="${css}">`;
@@ -96,8 +103,8 @@ const replaceJs = replaceFunc(jsFiles);
 const replaceCss = replaceFunc(cssFiles);
 const regex = new RegExp(`(<!\\-\\- remove:${removeCondition} \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)`, 'gm');
 
-fs.createReadStream(path.join(__dirname, program.input))
-    .pipe(replaceStream(/(<!\-\- inject:js \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceJs))
-    .pipe(replaceStream(/(<!\-\- inject:css \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceCss))
-    .pipe(replaceStream(regex, ''))
-    .pipe(fs.createWriteStream(path.join(__dirname, program.output)));
+fs.createReadStream(program.input)
+.pipe(replaceStream(/(<!\-\- inject:js \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceJs))
+.pipe(replaceStream(/(<!\-\- inject:css \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceCss))
+.pipe(replaceStream(regex, ''))
+.pipe(fs.createWriteStream(program.output));
