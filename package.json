@@ -6,6 +6,10 @@
   "scripts": {
     "test": "tape tests/*.js | faucet"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:DannyMoerkerke/postbuild.git"
+  },
   "author": "Danny Moerkerke <danny@dannymoerkerke.nl>",
   "license": "ISC",
   "dependencies": {
