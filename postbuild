@@ -30,7 +30,7 @@ const getFullPath = (file) => {
 program
 .version('1.0.0')
 .option('-i, --input <input>', 'Input file')
-.option('-o, --output <output>', 'Output file')
+.option('-o, --output <output>', 'Output file (defaults to input when omitted)')
 .option('-c, --css <css>', 'css file(s) to inject (file or directory)')
 .option('-j, --js <js>', 'js file(s) to inject (file or directory)')
 .option('-r, --remove <remove>', 'Remove condition')
