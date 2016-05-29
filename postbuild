@@ -28,6 +28,10 @@ const getFullPath = (file) => {
     return file.substring(0, 1) !== '/' ? `${process.cwd()}/${file}` : `${process.cwd()}${file}`;
 };
 
+const removePrefix = (file, prefix) => {
+    return prefix ? file.substr(prefix.length) : file;
+}
+
 program
 .version('1.0.0')
 .option('-i, --input <input>', 'Input file')
@@ -35,6 +39,7 @@ program
 .option('-c, --css <css>', 'css file(s) to inject (file or directory). Wildcards can be used with quotation: \'**/*.css\'')
 .option('-j, --js <js>', 'js file(s) to inject (file or directory). Wildcards can be used with quotation: \'**/*.js\'')
 .option('-r, --remove <remove>', 'Remove condition')
+.option('-g, --ignore <path>', 'Prefix to remove from the injected filenames')
 .parse(process.argv);
 
 if(!program.input) {
@@ -64,17 +69,20 @@ if(program.js) {
     try {
         if(glob.hasMagic(js)) {
              jsFiles = glob.sync(js)
+             .map(file => removePrefix(file, program.ignore))
              .map(file => `<script src="${file}"></script>`)
              .join('\n');
         }
         else if(fs.lstatSync(js).isDirectory()) {
              jsFiles = fs.readdirSync(js)
              .filter(file => file.substr(-3) === '.js')
-             .map(file => `<script src="${js}/${file}"></script>`)
+             .map(file => removePrefix(`${js}/${file}`, program.ignore))
+             .map(file => `<script src="${file}"></script>`)
              .join('\n');
         }
         else if(fs.lstatSync(js).isFile()) {
-            jsFiles = `<script src="${js}"></script>`;
+            let file = removePrefix(js, program.ignore);
+            jsFiles = `<script src="${file}"></script>`;
         }
     }
     catch(e) {
@@ -88,17 +96,20 @@ if(program.css) {
     try {
         if(glob.hasMagic(css)) {
              cssFiles = glob.sync(css)
+             .map(file => removePrefix(file, program.ignore))
              .map(file => `<link rel="stylesheet" href="${file}">`)
              .join('\n');
         }
         else if(fs.lstatSync(css).isDirectory()) {
             cssFiles = fs.readdirSync(css)
             .filter(file => file.substr(-4) === '.css')
-            .map(file => `<link rel="stylesheet" href="${css}/${file}">`)
+            .map(file => removePrefix(`${css}/${file}`, program.ignore))
+            .map(file => `<link rel="stylesheet" href="${file}">`)
             .join('\n');
         }
         else if(fs.lstatSync(css).isFile()) {
-            cssFiles = `<link rel="stylesheet" href="${css}">`;
+            let file = removePrefix(css, program.ignore);
+            cssFiles = `<link rel="stylesheet" href="${file}">`;
         }
     }
     catch(e) {

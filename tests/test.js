@@ -155,6 +155,80 @@ test('test injection of javascripts with wildcard', (t) => {
     });
 });
 
+test('test injection of all stylesheets in directory with ignore', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -c ${tmpDir} -g ${tmpDir}/`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            cssFiles.forEach((file) => {
+                t.equal(true, data.indexOf(`\"${file}\"`) !== -1, `expect ${file} to be injected`);
+            });
+
+            t.end();
+        });
+    });
+});
+
+test('test injection of all javascripts in directory with ignore', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -j ${tmpDir} -g ${tmpDir}/`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            jsFiles.forEach((file) => {
+                t.equal(true, data.indexOf(`\"${file}\"`) !== -1, `expect ${file} to be injected`);
+            });
+
+            t.end();
+        });
+    });
+});
+
+test('test injection of single stylesheet with ignore', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -c ${tmpDir}/${cssFiles[0]} -g ${tmpDir}/`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            t.equal(true, data.indexOf(`\"${cssFiles[0]}\"`) !== -1, `expect ${cssFiles[0]} to be injected`);
+
+            t.end();
+        });
+    });
+});
+
+test('test injection of single javascript with ignore', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -j ${tmpDir}/${jsFiles[0]} -g ${tmpDir}/`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            t.equal(true, data.indexOf(`\"${jsFiles[0]}\"`) !== -1, `expect ${jsFiles[0]} to be injected`);
+
+            t.end();
+        });
+    });
+});
+
+test('test injection of stylesheets with wildcard with ignore', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -c '${cssFilesWildcard}' -g ${tmpDir}/`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            cssFiles.forEach((file) => {
+                t.equal(true, data.indexOf(`\"${file}\"`) !== -1, `expect ${file} to be injected`);
+            });
+
+            t.end();
+        });
+    });
+});
+
+test('test injection of javascripts with wildcard with ignore', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -j '${jsFilesWildcard}' -g ${tmpDir}/`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            jsFiles.forEach((file) => {
+                t.equal(true, data.indexOf(`\"${file}\"`) !== -1, `expect ${file} to be injected`);
+            });
+
+            t.end();
+        });
+    });
+});
+
 test('test removal of development code', (t) => {
     exec(`./postbuild -i ${inputFile} -o ${outputFile} -r development`, (err) => {
         const devRegex = new RegExp('(<!\\-\\- remove:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');

@@ -46,6 +46,7 @@ This way you can replace the regular files used in a development environment wit
     -c, --css <css>        css file(s) to inject (file or directory). Wildcards can be used with quotation: '**/*.css'
     -j, --js <js>          js file(s) to inject (file or directory). Wildcards can be used with quotation: '**/*.js'
     -r, --remove <remove>  Remove condition
+    -g, --ignore <path>, Prefix to remove from the injected filenames
 
 ### Examples
 
