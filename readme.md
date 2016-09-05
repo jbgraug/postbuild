@@ -43,9 +43,10 @@ This way you can replace the regular files used in a development environment wit
     -V, --version          output the version number
     -i, --input <input>    Input file
     -o, --output <output>  Output file (defaults to input when omitted)
-    -c, --css <css>        css file(s) to inject (file or directory)
-    -j, --js <js>          js file(s) to inject (file or directory)
+    -c, --css <css>        css file(s) to inject (file or directory). Wildcards can be used with quotation: '**/*.css'
+    -j, --js <js>          js file(s) to inject (file or directory). Wildcards can be used with quotation: '**/*.js'
     -r, --remove <remove>  Remove condition
+    -g, --ignore <path>    Prefix to remove from the injected filenames
 
 ### Examples
 
