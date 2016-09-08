@@ -2,18 +2,19 @@
 
 'use strict';
 
-const process = require('process');
+const child_process = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const glob = require('glob');
 const replaceStream = require('replacestream');
 const program = require('commander');
-const glob = require('glob');
 
 let cssFiles;
 let jsFiles;
+let revision;
 let removeCondition;
 
-const replaceFunc = (replacement) => {
+const replaceFunc = replacement => {
     return function() {
         return replacement === undefined ? arguments[0] : replacement;
     };
@@ -24,13 +25,9 @@ const handleError = (message) => {
     process.exit(1);
 };
 
-const getFullPath = (file) => {
-    return file.substring(0, 1) !== '/' ? `${process.cwd()}/${file}` : `${process.cwd()}${file}`;
-};
+const getFullPath = (file) => file.substring(0, 1) !== '/' ? `${process.cwd()}/${file}` : `${process.cwd()}${file}`;
 
-const removePrefix = (file, prefix) => {
-    return prefix ? file.substr(prefix.length) : file;
-}
+const removePrefix = (file, prefix) => prefix ? file.substr(prefix.length) : file;
 
 program
 .version('1.0.0')
@@ -40,6 +37,7 @@ program
 .option('-j, --js <js>', 'js file(s) to inject (file or directory). Wildcards can be used with quotation: \'**/*.js\'')
 .option('-r, --remove <remove>', 'Remove condition')
 .option('-g, --ignore <path>', 'Prefix to remove from the injected filenames')
+.option('-H, --hash', 'Inject git hash of current commit')
 .parse(process.argv);
 
 if(!program.input) {
@@ -121,12 +119,20 @@ if(program.remove) {
     removeCondition = program.remove.split(':').pop();
 }
 
+if(program.hash) {
+    revision = child_process
+                .execSync('git rev-parse HEAD')
+                .toString().trim();
+}
+
 const replaceJs = replaceFunc(jsFiles);
 const replaceCss = replaceFunc(cssFiles);
+const injectHash = replaceFunc(`<!-- ${revision} -->`)
 const regex = new RegExp(`(<!\\-\\- remove:${removeCondition} \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)`, 'gm');
 
 fs.createReadStream(program.input)
 .pipe(replaceStream(/(<!\-\- inject:js \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceJs))
 .pipe(replaceStream(/(<!\-\- inject:css \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceCss))
+.pipe(replaceStream(/(<!\-\- inject:git\-hash \-\->)/gm, injectHash))
 .pipe(replaceStream(regex, ''))
 .pipe(fs.createWriteStream(program.output));

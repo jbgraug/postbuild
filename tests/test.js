@@ -2,7 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const exec = require('child_process').exec;
+const child_process = require('child_process');
+const exec = child_process.exec;
 const test = require('tape');
 
 const before = test;
@@ -14,9 +15,11 @@ const cssFiles = ['styles1.css', 'styles2.css', 'styles3.css'];
 const jsFiles = ['script1.js', 'script2.js', 'script3.js'];
 const jsFilesWildcard = '**/*.js';
 const cssFilesWildcard = '**/*.css';
+const revision = child_process
+                    .execSync('git rev-parse HEAD')
+                    .toString().trim();
 
 const setup = () => {
-
     try {
         fs.lstatSync(tmpDir);
     }
@@ -55,9 +58,11 @@ const setup = () => {
                     <!-- remove:production -->
                     <script src="http://localhost:35729/livereload.js?snipver=1"></script>
                     <!-- endremove -->
+                    
+                    
                 </body>
             </html>
-
+            <!-- inject:git-hash -->
     `);
     
     cssFiles.forEach((file) => {
@@ -251,6 +256,18 @@ test('test removal of production code', (t) => {
         fs.readFile(`${outputFile}`, (err, data) => {
             t.equal(false, prodRegex.test(data), `expect production code to be removed`);
             t.equal(true, devRegex.test(data), `expect development code to not be removed`);
+
+            t.end();
+        });
+    });
+});
+
+
+test('test injection of git hash', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -H`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            t.equal(true, data.indexOf(revision) !== -1, `expect git hash to be injected`);
 
             t.end();
         });
