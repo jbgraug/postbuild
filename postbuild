@@ -8,11 +8,23 @@ const path = require('path');
 const glob = require('glob');
 const replaceStream = require('replacestream');
 const program = require('commander');
+const crypto = require('crypto');
 
 let cssFiles;
 let jsFiles;
 let revision;
 let removeCondition;
+
+function appendETagSHAToFilename(filename){
+    if (program.etag) {
+        let sha = crypto.createHash('sha');
+        let fContent = fs.readFileSync(filename).toString();
+        sha.update(fContent);
+        return `${filename}?etag=${sha.digest('hex').toString()}`;
+    } else {
+        return filename;
+    }
+}
 
 const replaceFunc = replacement => {
     return function() {
@@ -38,6 +50,7 @@ program
 .option('-r, --remove <remove>', 'Remove condition')
 .option('-g, --ignore <path>', 'Prefix to remove from the injected filenames')
 .option('-H, --hash', 'Inject git hash of current commit')
+.option('-e, --etag', 'appends "?etag=fileHash" to every import (link, script) to avoid undesired caching in new deployments')
 .parse(process.argv);
 
 if(!program.input) {
@@ -68,6 +81,7 @@ if(program.js) {
         if(glob.hasMagic(js)) {
              jsFiles = glob.sync(js)
              .map(file => removePrefix(file, program.ignore))
+             .map(file => appendETagSHAToFilename(file))
              .map(file => `<script src="${file}"></script>`)
              .join('\n');
         }
@@ -75,12 +89,13 @@ if(program.js) {
              jsFiles = fs.readdirSync(js)
              .filter(file => file.substr(-3) === '.js')
              .map(file => removePrefix(`${js}/${file}`, program.ignore))
+             .map(file => appendETagSHAToFilename(file))
              .map(file => `<script src="${file}"></script>`)
              .join('\n');
         }
         else if(fs.lstatSync(js).isFile()) {
             let file = removePrefix(js, program.ignore);
-            jsFiles = `<script src="${file}"></script>`;
+            jsFiles = `<script src="${appendETagSHAToFilename(file)}"></script>`;
         }
     }
     catch(e) {
@@ -95,6 +110,7 @@ if(program.css) {
         if(glob.hasMagic(css)) {
              cssFiles = glob.sync(css)
              .map(file => removePrefix(file, program.ignore))
+             .map(file => appendETagSHAToFilename(file))
              .map(file => `<link rel="stylesheet" href="${file}">`)
              .join('\n');
         }
@@ -102,12 +118,13 @@ if(program.css) {
             cssFiles = fs.readdirSync(css)
             .filter(file => file.substr(-4) === '.css')
             .map(file => removePrefix(`${css}/${file}`, program.ignore))
+            .map(file => appendETagSHAToFilename(file))
             .map(file => `<link rel="stylesheet" href="${file}">`)
             .join('\n');
         }
         else if(fs.lstatSync(css).isFile()) {
             let file = removePrefix(css, program.ignore);
-            cssFiles = `<link rel="stylesheet" href="${file}">`;
+            cssFiles = `<link rel="stylesheet" href="${appendETagSHAToFilename(file)}">`;
         }
     }
     catch(e) {
