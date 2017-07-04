@@ -51,6 +51,7 @@ This way you can replace the regular files used in a development environment wit
     -r, --remove <remove>  Remove condition
     -g, --ignore <path>    Prefix to remove from the injected filenames
     -H, --hash             Inject git hash of current commit
+    -e, --etag             Appends "?etag=fileHash" to every import (link, script) to avoid undesired caching in new deployments
 
 ### Examples
 
@@ -133,6 +134,29 @@ results in:
 ```
 
 *Notice that `vendor.js` is not injected.*
+
+If the -e, --etag is specified the output will be 
+
+```html
+   <!DOCTYPE html>
+   <html>
+   <head>
+     <title>Home</title>
+
+     <!-- inject:css -->
+     <link rel="stylesheet" href="dist/css/styles.1234abc.css?etag=e997365235369248a234b1c343ac41">
+     <!-- endinject -->
+
+   </head>
+   <body>
+
+     <!-- inject:js -->
+     <script src="dist/js/build.4567def.js?etag=9fffaf9de332d9848ab34bbc3434d34341"></script>
+     <!-- endinject -->
+
+   </body>
+   </html>
+```
 
 ### Tests
 
