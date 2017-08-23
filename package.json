@@ -8,15 +8,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:DannyMoerkerke/postbuild.git"
+    "url": "git+ssh://git@github.com:jbgraug/postbuild.git"
   },
   "author": "Danny Moerkerke <danny@dannymoerkerke.nl>",
+  "contributors": [
+    { 
+      "name" : "Juan Grau", 
+      "email" : "jbgraug@gmail.com"
+    }
+  ],
   "license": "ISC",
   "dependencies": {
     "commander": "^2.9.0",
-    "faucet": "0.0.1",
     "replacestream": "^4.0.0",
-    "tape": "^4.5.1",
     "glob": "^7.0.0"
+  },
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "tape": "^4.5.1"
+  },
+  "engines":{
+    "node" : ">=4.0.0"
   }
 }
