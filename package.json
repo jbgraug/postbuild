@@ -1,6 +1,6 @@
 {
   "name": "postbuild",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A command line utility to inject css and js files into an html file or to remove code based on conditions.",
   "bin": "./postbuild",
   "scripts": {
