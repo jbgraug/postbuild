@@ -59,7 +59,7 @@ const setup = () => {
                     <script src="http://localhost:35729/livereload.js?snipver=1"></script>
                     <!-- endremove -->
                     
-                    
+                    <!-- inject:string -->
                 </body>
             </html>
             <!-- inject:git-hash -->
@@ -268,6 +268,17 @@ test('test injection of git hash', (t) => {
 
         fs.readFile(`${outputFile}`, (err, data) => {
             t.equal(true, data.indexOf(revision) !== -1, `expect git hash to be injected`);
+
+            t.end();
+        });
+    });
+});
+
+test('test injection of string', (t) => {
+    exec(`./postbuild -i ${inputFile} -o ${outputFile} -s "environment string"`, (err) => {
+
+        fs.readFile(`${outputFile}`, (err, data) => {
+            t.equal(true, data.indexOf('environment string') !== -1, `expect string to be injected`);
 
             t.end();
         });

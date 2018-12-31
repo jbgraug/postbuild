@@ -33,6 +33,7 @@ Place the markers in your html file to inject or remove code:
      <script src="http://localhost:35729/livereload.js?snipver=1"></script>
      <!-- endremove -->
 
+     <!-- inject:string -->
    </body>
    </html>
    <!-- inject:git-hash -->
@@ -51,6 +52,7 @@ This way you can replace the regular files used in a development environment wit
     -r, --remove <remove>  Remove condition
     -g, --ignore <path>    Prefix to remove from the injected filenames
     -H, --hash             Inject git hash of current commit
+    -s, --string <string>  Inject a custom string
     -e, --etag             Appends "?etag=fileHash" to every import (link, script) to avoid undesired caching in new deployments
 
 ### Examples
@@ -65,7 +67,7 @@ Given a directory:
       vendor.js
       build.4567def.js
 ```
-`postbuild -i index.html -o dist/index.html -c dist/css -j dist/js -r production -H`
+`postbuild -i index.html -o dist/index.html -c dist/css -j dist/js -r production -s environment -H`
 
 will result in the file `dist/index.html`:
 
@@ -87,6 +89,7 @@ will result in the file `dist/index.html`:
      <script src="dist/js/build.4567def.js"></script>
      <!-- endinject -->
 
+     environment
    </body>
    </html>
    <!-- b64f022ae51d87a411c4608f403f3216ee028d03 -->
@@ -105,6 +108,12 @@ will result in the file `dist/index.html`:
     <!-- inject:git-hash -->
 ```
 *has been replaced by the git hash of the current commit.*
+
+*The comment*
+```
+    <!-- inject:string -->
+```
+*has been replaced by the string provided on the command line.*
 
 Specifying a single file instead of a directory will only inject that single file:
 

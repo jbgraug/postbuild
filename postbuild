@@ -14,6 +14,7 @@ let cssFiles;
 let jsFiles;
 let revision;
 let removeCondition;
+let insertString;
 
 function appendETagSHAToFilename(filename){
     if (program.etag) {
@@ -50,6 +51,7 @@ program
 .option('-r, --remove <remove>', 'Remove condition')
 .option('-g, --ignore <path>', 'Prefix to remove from the injected filenames')
 .option('-H, --hash', 'Inject git hash of current commit')
+.option('-s, --string <string>', 'Inject a custom string')
 .option('-e, --etag', 'appends "?etag=fileHash" to every import (link, script) to avoid undesired caching in new deployments')
 .parse(process.argv);
 
@@ -136,6 +138,10 @@ if(program.remove) {
     removeCondition = program.remove.split(':').pop();
 }
 
+if(program.string) {
+    insertString = program.string.split(':').pop();
+}
+
 if(program.hash) {
     revision = child_process
                 .execSync('git rev-parse HEAD')
@@ -144,12 +150,14 @@ if(program.hash) {
 
 const replaceJs = replaceFunc(jsFiles);
 const replaceCss = replaceFunc(cssFiles);
-const injectHash = replaceFunc(`<!-- ${revision} -->`)
-const regex = new RegExp(`(<!\\-\\- remove:${removeCondition} \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)`, 'gm');
+const injectHash = replaceFunc(`<!-- ${revision} -->`);
+const injectString = replaceFunc(insertString);
+const removeRegex = new RegExp(`(<!\\-\\- remove:${removeCondition} \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)`, 'gm');
 
 fs.createReadStream(program.input)
 .pipe(replaceStream(/(<!\-\- inject:js \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceJs))
 .pipe(replaceStream(/(<!\-\- inject:css \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceCss))
 .pipe(replaceStream(/(<!\-\- inject:git\-hash \-\->)/gm, injectHash))
-.pipe(replaceStream(regex, ''))
+.pipe(replaceStream(/(<!\-\- inject:string \-\->)/gm, injectString))
+.pipe(replaceStream(removeRegex, ''))
 .pipe(fs.createWriteStream(program.output));
