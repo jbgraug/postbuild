@@ -48,6 +48,10 @@ const setup = () => {
                     <!-- remove:development -->
                     <script src="lib/profiler.js"></script>
                     <!-- endremove -->
+
+                    <!-- keep:development -->
+                    <script src="lib/dev_profiler.js"></script>
+                    <!-- endkeep -->
             
                     <script src="/src/jquery.js"></script>
                     
@@ -58,7 +62,14 @@ const setup = () => {
                     <!-- remove:production -->
                     <script src="http://localhost:35729/livereload.js?snipver=1"></script>
                     <!-- endremove -->
+
+                    <!-- keep:production -->
+                    <script src="http://localhost:35729/prod_livereload.js?snipver=1"></script>
+                    <!-- endkeep -->
                     
+                    <!-- keep:unknown -->
+                    <script src="http://localhost:35729/unknown_livereload.js?snipver=1"></script>
+                    <!-- endkeep -->
                     
                 </body>
             </html>
@@ -234,28 +245,40 @@ test('test injection of javascripts with wildcard with ignore', (t) => {
     });
 });
 
-test('test removal of development code', (t) => {
+test('test keep and remove development code', (t) => {
     exec(`./postbuild -i ${inputFile} -o ${outputFile} -r development`, (err) => {
-        const devRegex = new RegExp('(<!\\-\\- remove:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
-        const prodRegex = new RegExp('(<!\\-\\- remove:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
-        
+        const devRemoveRegex = new RegExp('(<!\\-\\- remove:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
+        const prodRemoveRegex = new RegExp('(<!\\-\\- remove:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
+        const devKeepRegex = new RegExp('(<!\\-\\- keep:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endkeep \\-\\->)');
+        const prodKeepRegex = new RegExp('(<!\\-\\- keep:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endkeep \\-\\->)');
+        const unknownKeepRegex = new RegExp('(<!\\-\\- keep:unknown \\-\\->)([\\s\\S]*?)(<!\\-\\- endkeep \\-\\->)');
+
         fs.readFile(`${outputFile}`, (err, data) => {
-            t.equal(false, devRegex.test(data), `expect development code to be removed`);
-            t.equal(true, prodRegex.test(data), `expect production code to not be removed`);
-            
+            t.equal(false, devRemoveRegex.test(data), `expect development code to be removed`);
+            t.equal(true, prodRemoveRegex.test(data), `expect production code to not be removed`);
+            t.equal(true, devKeepRegex.test(data), `expect development code to be kept`);
+            t.equal(false, prodKeepRegex.test(data), `expect production code to not be kept`);
+            t.equal(false, unknownKeepRegex.test(data), `expect unknown code to not be kept`);
+
             t.end();
         });
     });
 });
 
-test('test removal of production code', (t) => {
+test('test keep and remove production code', (t) => {
     exec(`./postbuild -i ${inputFile} -o ${outputFile} -r production`, (err) => {
-        const prodRegex = new RegExp('(<!\\-\\- remove:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
-        const devRegex = new RegExp('(<!\\-\\- remove:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
+        const prodRemoveRegex = new RegExp('(<!\\-\\- remove:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
+        const devRemoveRegex = new RegExp('(<!\\-\\- remove:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)');
+        const prodKeepRegex = new RegExp('(<!\\-\\- keep:production \\-\\->)([\\s\\S]*?)(<!\\-\\- endkeep \\-\\->)');
+        const devKeepRegex = new RegExp('(<!\\-\\- keep:development \\-\\->)([\\s\\S]*?)(<!\\-\\- endkeep \\-\\->)');
+        const unknownKeepRegex = new RegExp('(<!\\-\\- keep:unknown \\-\\->)([\\s\\S]*?)(<!\\-\\- endkeep \\-\\->)');
 
         fs.readFile(`${outputFile}`, (err, data) => {
-            t.equal(false, prodRegex.test(data), `expect production code to be removed`);
-            t.equal(true, devRegex.test(data), `expect development code to not be removed`);
+            t.equal(false, prodRemoveRegex.test(data), `expect production code to be removed`);
+            t.equal(true, devRemoveRegex.test(data), `expect development code to not be removed`);
+            t.equal(true, prodKeepRegex.test(data), `expect production code to be kept`);
+            t.equal(false, devKeepRegex.test(data), `expect development code to not be kept`);
+            t.equal(false, unknownKeepRegex.test(data), `expect unknown code to not be kept`);
 
             t.end();
         });

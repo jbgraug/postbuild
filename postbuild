@@ -47,7 +47,7 @@ program
 .option('-o, --output <output>', 'Output file (defaults to input when omitted)')
 .option('-c, --css <css>', 'css file(s) to inject (file or directory). Wildcards can be used with quotation: \'**/*.css\'')
 .option('-j, --js <js>', 'js file(s) to inject (file or directory). Wildcards can be used with quotation: \'**/*.js\'')
-.option('-r, --remove <remove>', 'Remove condition')
+.option('-r, --remove <remove>', 'Remove and keep condition')
 .option('-g, --ignore <path>', 'Prefix to remove from the injected filenames')
 .option('-H, --hash', 'Inject git hash of current commit')
 .option('-e, --etag', 'appends "?etag=fileHash" to every import (link, script) to avoid undesired caching in new deployments')
@@ -145,11 +145,13 @@ if(program.hash) {
 const replaceJs = replaceFunc(jsFiles);
 const replaceCss = replaceFunc(cssFiles);
 const injectHash = replaceFunc(`<!-- ${revision} -->`)
-const regex = new RegExp(`(<!\\-\\- remove:${removeCondition} \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)`, 'gm');
+const keepRegex = new RegExp(`(<!\\-\\- keep:((?!${removeCondition}).)* \\-\\->)([\\s\\S]*?)(<!\\-\\- endkeep \\-\\->)`, 'gm');
+const removeRegex = new RegExp(`(<!\\-\\- remove:${removeCondition} \\-\\->)([\\s\\S]*?)(<!\\-\\- endremove \\-\\->)`, 'gm');
 
 fs.createReadStream(program.input)
 .pipe(replaceStream(/(<!\-\- inject:js \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceJs))
 .pipe(replaceStream(/(<!\-\- inject:css \-\->)([\s\S]*?)(<!\-\- endinject \-\->)/gm, replaceCss))
 .pipe(replaceStream(/(<!\-\- inject:git\-hash \-\->)/gm, injectHash))
-.pipe(replaceStream(regex, ''))
+.pipe(replaceStream(keepRegex, ''))
+.pipe(replaceStream(removeRegex, ''))
 .pipe(fs.createWriteStream(program.output));
