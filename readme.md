@@ -4,6 +4,7 @@ Inspired by [gulp-inject](https://www.npmjs.com/package/gulp-inject) and [gulp-r
 This module injects css and javascript files between markers placed in an html file or removes code between markers.
 It can take a single file or a directory of files which will be transformed to strings and injected.
 It removes code between markers so you can for example remove livereload code which is not needed in a production environment.
+As well as removing code it can keep code between markers so you can had environment specific code such as Sentry which is not needed in development or SIT environments. 
 It can also inject the current git commit hash into the HTML as a comment so it is easily visible which commit is currently 
 deployed.
 
@@ -33,6 +34,10 @@ Place the markers in your html file to inject or remove code:
      <script src="http://localhost:35729/livereload.js?snipver=1"></script>
      <!-- endremove -->
 
+     <!-- keep:production -->
+     <script src="https://browser.sentry-cdn.com/4.4.2/bundle.min.js" crossorigin="anonymous"></script>
+     <!-- endkeep -->
+
    </body>
    </html>
    <!-- inject:git-hash -->
@@ -48,7 +53,7 @@ This way you can replace the regular files used in a development environment wit
     -o, --output <output>  Output file (defaults to input when omitted)
     -c, --css <css>        css file(s) to inject (file or directory). Wildcards can be used with quotation: '**/*.css'
     -j, --js <js>          js file(s) to inject (file or directory). Wildcards can be used with quotation: '**/*.js'
-    -r, --remove <remove>  Remove condition
+    -r, --remove <remove>  Remove and keep condition
     -g, --ignore <path>    Prefix to remove from the injected filenames
     -H, --hash             Inject git hash of current commit
     -e, --etag             Appends "?etag=fileHash" to every import (link, script) to avoid undesired caching in new deployments
@@ -87,6 +92,10 @@ will result in the file `dist/index.html`:
      <script src="dist/js/build.4567def.js"></script>
      <!-- endinject -->
 
+     <!-- keep:production -->
+     <script src="https://browser.sentry-cdn.com/4.4.2/bundle.min.js" crossorigin="anonymous"></script>
+     <!-- endkeep -->
+
    </body>
    </html>
    <!-- b64f022ae51d87a411c4608f403f3216ee028d03 -->
@@ -99,6 +108,14 @@ will result in the file `dist/index.html`:
      <!-- endremove -->
 ```
 *has been removed.*
+
+*But the code*
+```
+     <!-- keep:production -->
+     <script src="https://browser.sentry-cdn.com/4.4.2/bundle.min.js" crossorigin="anonymous"></script>
+     <!-- endkeep -->
+```
+*has NOT been removed.*
 
 *The comment*
 ```
@@ -129,6 +146,10 @@ results in:
      <script src="dist/js/build.4567def.js"></script>
      <!-- endinject -->
 
+     <!-- keep:production -->
+     <script src="https://browser.sentry-cdn.com/4.4.2/bundle.min.js" crossorigin="anonymous"></script>
+     <!-- endkeep -->
+
    </body>
    </html>
 ```
@@ -153,6 +174,10 @@ If the -e, --etag is specified the output will be
      <!-- inject:js -->
      <script src="dist/js/build.4567def.js?etag=9fffaf9de332d9848ab34bbc3434d34341"></script>
      <!-- endinject -->
+
+     <!-- keep:production -->
+     <script src="https://browser.sentry-cdn.com/4.4.2/bundle.min.js" crossorigin="anonymous"></script>
+     <!-- endkeep -->
 
    </body>
    </html>
